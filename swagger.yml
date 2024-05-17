@@ -1,0 +1,59 @@
+openapi: 3.0.0
+info:
+  title: Todo API
+  version: 1.0.0
+paths:
+  /todo:
+    get:
+      summary: Get all todo items
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoItem'
+    post:
+      summary: Create a new todo item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TodoItem'
+      responses:
+        '201':
+          description: Todo item created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+  /todo/{todoid}:
+    delete:
+      summary: Delete a specific todo item
+      parameters:
+        - name: todoid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Todo item deleted
+components:
+  schemas:
+    TodoItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        content:
+          type: string
+        completed:
+          type: boolean
+security:
+  - OAuth2:
+      - 'read'
+      - 'write'

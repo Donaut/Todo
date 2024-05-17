@@ -1,0 +1,9 @@
+
+# Dependency directories
+node_modules/
+
+# Ignore keycloack export folder
+kc/export/
+
+# Ignore production folder
+dist/
