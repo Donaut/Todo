@@ -9,7 +9,6 @@
     "build-api": "tsc --project ./api/tsconfig.json",
     "build-spa": "vite build --outDir ./dist/spa",
     "build": "npm run build-api && npm run build-spa",
-    "generate": "openapi-typescript-codegen --input ./swagger.yml --output ./client/generated",
     "api-test": "node --import tsx --test api/**/*Test.ts",
     "export-realm": "docker exec todo-keycloak-1 /opt/keycloak/bin/kc.sh export --file /opt/keycloak/data/export/todorealm.json --realm todo --users same_file",
     "export-allrealm": "docker exec todo-keycloak-1 /opt/keycloak/bin/kc.sh export --dir /opt/keycloak/data/export/ --users realm_file"

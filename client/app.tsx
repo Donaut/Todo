@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Login, Todo, TodoApp } from "./Todo";
 import Keycloak from "keycloak-js";
 
@@ -13,43 +13,33 @@ const keycloak = new Keycloak({
   realm: realm,
 });
 
-console.log(keycloakurl);
-console.log(realm);
-console.log(clientid);
-
 const keycloakPromise = keycloak.init({ onLoad: "check-sso" });
-let keycloakResolved = false;
-keycloakPromise.then(() => keycloakResolved = true)
 
 export default function App() {
+
   const [isAuthenticated, setAuth] = useState(keycloak.authenticated);
   const [todos, setTodos] = useState(new Array<Todo>())
   const [hasMore, setHasMore] = useState(false);
   const [page, setPage] = useState(0);
 
-  console.log(`kcinit: ${false}, outinit: ${keycloakResolved}, resolved: ${keycloakResolved}, isAuth: ${isAuthenticated}`);
-  if(!keycloakResolved) {
+  useEffect(() => {
     keycloakPromise
       .then(success => {
         setAuth(success);
         if(!success) return;
-        fetchTodos({ page })
-          .then(() => {
-            setAuth(success)
-          });
-      }) 
-  }
-  
+        fetchTodos({ page: page });
+      })
+  }, [])
+
   const fetchTodos = ({ page = 0 }) => fetch(`./api/todo?skip=${page}`, {
-    method: 'GET',
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-      'Authorization': 'Bearer ' + keycloak.token,
-    },
-  }).then(async res => {
+      method: 'GET',
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        'Authorization': 'Bearer ' + keycloak.token,
+      },
+    }).then(async res => {
     if(!res.ok) return console.error(`Failed to fetch todos. Server response: ${res.status}`, res);
     const resultTodos = await res.json() as Todo[];
-
     setHasMore(resultTodos.length == 50)
     setTodos([ ...todos, ...resultTodos ])
   })
@@ -68,7 +58,6 @@ export default function App() {
     .then(async res => {
       if(!res.ok) return console.error(`Failed to add todo. Server response: ${res.status}`, res);
       const body = await res.json() as { id: string };
-
       setTodos([ { id: body.id, content: content, checked: false }, ...todos ])
     })
   }
@@ -88,7 +77,6 @@ export default function App() {
     })
     .then(async res => {
       if(!res.ok) return console.error(`Failed to change todo. Server response: ${res.status}`, res);
-
       setTodos(todos.map(x => x.id === todo.id ? { id: todo.id, content: todo.content, checked: todo.checked } : x ))
     })
   }
@@ -102,16 +90,12 @@ export default function App() {
     })
     .then(async res => {
       if(!res.ok) return console.error(`Failed to delete a todo. Server response: ${res.status}`, res);
-      
       setTodos(todos.filter(todo => todo.id !== id))
     })
   }
 
   function loadMore() {
-    fetchTodos({ page: page + 1 })
-      .then(res => {
-        setPage(page + 1);
-      });
+    fetchTodos({ page: page + 1 }).then(() => setPage(page + 1));
   }
 
   function login() {
